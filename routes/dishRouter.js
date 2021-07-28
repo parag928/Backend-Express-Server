@@ -228,7 +228,14 @@ dishRouter.route('/:dishId/comments/:commentId')
         .then((dish) => {
             if (dish != null && dish.comments.id(req.params.commentId) != null) {
                 var theComment = dish.comments.id(req.params.commentId);
-                if (theComment.author._id === req.user._id){
+                console.log("Comment Author: " + theComment.author._id);
+                console.log("The Author: " + req.user._id);
+                if (theComment.author._id != req.user._id){
+                    var error = new Error("You are not authorized to delete this comment");
+                    error.status = 403;
+                    return next(error);
+                }
+                else{
                     dish.comments.id(req.params.commentId).remove();
                     dish.save()
                     .then((dish) => {
@@ -240,11 +247,6 @@ dishRouter.route('/:dishId/comments/:commentId')
                             res.json(dish);  
                         })               
                     }, (err) => next(err));
-                }
-                else{
-                    var error = new Error("You are not authorized to delete this comment");
-                    error.status = 403;
-                    return next(error);
                 }
             }
             else if (dish == null) {
