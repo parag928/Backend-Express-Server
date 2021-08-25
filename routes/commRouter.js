@@ -1,43 +1,41 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('./cors');
+const commRouter = express.Router();
+const Comment = require('../models/comment');
+const authenticate = require('../authenticate');
+
+commRouter.use(bodyParser.json());
 
 
-const leaderRouter = express.Router();
-const Leader = require('../models/leaders');
-var authenticate = require('../authenticate');
-
-leaderRouter.use(bodyParser.json());
-
-leaderRouter.route('/')
+commRouter.route('/')
     .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
     .get(cors.cors, (req,res,next) => {
-        Leader.find(req.query)
-        .then((leaders) => {
+        Comment.find(req.query)
+        .then((comments) => {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.json(leaders);
+            res.json(comments);
         }, (err) => next(err))
         .catch((err) => next(err));
     })
     .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-        authenticate.verifyAdmin(req,res,next);
-        Leader.create(req.body)
-        .then((leader) => {
-            console.log('Leader Created ', leader);
+        Comment.create(req.body)
+        .then((comment) => {
+            console.log('Comment Created ', comment);
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.json(leader);
+            res.json(comment);
         }, (err) => next(err))
         .catch((err) => next(err));
     })
     .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         res.statusCode = 403;
-        res.end('PUT operation not supported on /leaders');
+        res.end('PUT operation not supported on /comments');
     })
     .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         authenticate.verifyAdmin(req,res,next);
-        Leader.remove({})
+        Comment.remove({})
         .then((removed) => {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
@@ -47,36 +45,36 @@ leaderRouter.route('/')
     });
 
 
-leaderRouter.route('/:leaderId')
+commRouter.route('/:commId')
     .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
     .get(cors.cors, (req,res,next) => {
-        Leader.findById(req.params.leaderId)
-        .then((leader) => {
+        Comment.findById(req.params.commId)
+        .then((comment) => {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.json(leader);
+            res.json(comment);
         }, (err) => next(err))
         .catch((err) => next(err));
     })
     .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         res.statusCode = 403;
-        res.end('POST operation not supported on /leaders/'+ req.params.leaderId);
+        res.end('POST operation not supported on /comments/'+ req.params.commId);
     })
     .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         authenticate.verifyAdmin(req,res,next);
-        Leader.findByIdAndUpdate(req.params.leaderId, {
+        Comment.findByIdAndUpdate(req.params.commId, {
             $set: req.body
         }, { new: true })
-        .then((leader) => {
+        .then((comment) => {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.json(leader);
+            res.json(comment);
         }, (err) => next(err))
         .catch((err) => next(err));
     })
     .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         authenticate.verifyAdmin(req,res,next);
-        Leader.findByIdAndRemove(req.params.leaderId)
+        Comment.findByIdAndRemove(req.params.commId)
         .then((resp) => {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
@@ -85,4 +83,4 @@ leaderRouter.route('/:leaderId')
         .catch((err) => next(err));
     });
 
-module.exports = leaderRouter;
+module.exports = commRouter;

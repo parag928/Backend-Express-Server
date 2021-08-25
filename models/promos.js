@@ -3,7 +3,11 @@ const Schema = mongoose.Schema;
 require('mongoose-currency').loadType(mongoose);
 const Currency = mongoose.Types.Currency;
 
-var promoSchema = new Schema({
+const promoSchema = new Schema({
+    id: {
+        type: Number,
+        required: true
+    },
     name:  {
         type: String,
         required: true

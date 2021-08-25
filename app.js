@@ -11,14 +11,11 @@ const url = config.mongoUrl;
 const mongoose1 = require('mongoose');
 
 var passport = require('passport');
-var authenticate = require('./authenticate');
-
-const Dishes = require('./models/dishes');
 
 const connect = mongoose1.connect(url);
 
 connect.then((db) => {
-    console.log("Connected correctly to server");
+    console.log("Connected correctly to the server");
 }, (err) => { console.log(err); });
 
 
@@ -28,8 +25,8 @@ var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
 const uploadRouter = require('./routes/uploadRouter');
-var favoriteRouter = require('./routes/favoriteRouter');
-var commentRouter = require('./routes/commentRouter');
+var cartRouter = require('./routes/cartRouter');
+var commRouter = require('./routes/commRouter');
 
 var app = express();
 
@@ -51,7 +48,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-//app.use(cookieParser('12345-67890-09876-54321'));
+app.use(cookieParser('12345-67890-09876-54321'));
 
 app.use(session({
   name: 'session-id',
@@ -66,6 +63,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
@@ -73,12 +71,12 @@ app.use('/users', usersRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use('/dishes',dishRouter);
-app.use('/promotions',promoRouter);
-app.use('/leaders',leaderRouter);
-app.use('/imageUpload',uploadRouter);
-app.use('/favorites', favoriteRouter);
-app.use('/comments',commentRouter);
+app.use('/dishes', dishRouter);
+app.use('/promotions', promoRouter);
+app.use("/leaders", leaderRouter);
+app.use('/imageUpload', uploadRouter);
+app.use('/cart', cartRouter);
+app.use('/comments', commRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -92,6 +90,7 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
+  
   res.status(err.status || 500);
   res.render('error');
 });

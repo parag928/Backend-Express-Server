@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const bodyParser = require('body-parser');
-var User = require('../models/user');
+const User = require('../models/user');
 var authenticate = require('../authenticate');
 const cors = require('./cors');
 
@@ -11,9 +11,9 @@ var passport = require('passport');
 
 /* GET users listing. */
 
-router.options('*', cors.corsWithOptions, (req, res) => { res.sendStatus(200); } )
+router.options('*', cors.corsWithOptions, (req, res) => { res.sendStatus(200);} )
 router.get('/', cors.corsWithOptions, function(req, res, next) {
-  res.send('respond with a resource');
+  res.send('Respond with a resource');
 });
 
 router.get('/facebook/token', cors.corsWithOptions, passport.authenticate('facebook-token'), (req, res) => {
@@ -32,7 +32,7 @@ router.post('/signup', cors.corsWithOptions, (req, res, next) => {
     if(err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
-      res.json({error: err});
+      res.json({success: false, error: err});
     }
     else {
       if (req.body.firstname)
@@ -43,53 +43,62 @@ router.post('/signup', cors.corsWithOptions, (req, res, next) => {
         if (err) {
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
-          res.json({error: err});
+          res.json({success: false, error: err});
           return ;
         }
-        passport.authenticate('local')(req, res, () => {
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.json({success: true, status: 'Registration Successful!'});
-        });
+        else if (user){
+          passport.authenticate('local')(req, res, () => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({success: true, status: 'Registration Successful!'});
+          });
+        }
       });
     }
   });
 });
 
 router.post('/login', cors.corsWithOptions, (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err)
-      return next(err);
+  passport.authenticate('local', (error, user, info) => {
+    if (error){
+      return next(error);
+    }
+    else if (user != null){
+      req.logIn(user, (err) => {
+        if (err) {
+          res.statusCode = 401;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({success: false, status: 'Login Unsuccessful!', statusText: 'Incorrect Username/Password!'});          
+        }
 
-    if (!user) {
+        else{
+          var token = authenticate.getToken({_id: req.user._id});
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({success: true, status: 'Login Successful!', userAcc: user, token: token});
+        }
+      })
+    }
+    else {
       res.statusCode = 401;
       res.setHeader('Content-Type', 'application/json');
-      res.json({success: false, status: 'Login Unsuccessful!', err: info});
-    }
-    req.logIn(user, (err) => {
-      if (err) {
-        res.statusCode = 401;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({success: false, status: 'Login Unsuccessful!', err: 'Could not log in user!'});          
-      }
-
-      var token = authenticate.getToken({_id: req.user._id});
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.json({success: true, status: 'Login Successful!', token: token});
-    }); 
-  }) (req, res, next);
+      res.json({success: false, status: 'Login Unsuccessful!', statusText: "Incorrect Username/Password"});
+    } 
+   }) (req, res, next);
 });
 
 router.get('/logout', cors.corsWithOptions, (req, res) => {
   if (req.session) {
     req.session.destroy();
+    req.logOut;
     res.clearCookie('session-id');
-    res.redirect('/');
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success: true, status: 'Logout successful!', statusText: "You have successfully loggged out!"});
   }
   else {
     var err = new Error('You are not logged in!');
-    err.status = 403;
+    err.statusCode = 403;
     next(err);
   }
 });

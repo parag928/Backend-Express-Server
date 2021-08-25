@@ -4,6 +4,10 @@ require('mongoose-currency').loadType(mongoose);
 const Currency = mongoose.Types.Currency;
 
 const dishSchema = new Schema({
+    id: {
+        type: Number,
+        required: true
+    },
     name: {
         type: String,
         required: true,
@@ -39,6 +43,6 @@ const dishSchema = new Schema({
     timestamps: true
 });
 
-var Dishes = mongoose.model('Dish', dishSchema);
+var Dish = mongoose.model('Dish', dishSchema);
 
-module.exports = Dishes;
+module.exports = Dish;

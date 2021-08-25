@@ -15,7 +15,7 @@ passport.deserializeUser(User.deserializeUser());
 
 exports.getToken = function(user) {
     return jwt.sign(user, config.secretKey,
-        {expiresIn: 3600});
+        {expiresIn: 360000});
 };
 
 var opts = {};
@@ -45,8 +45,8 @@ exports.verifyAdmin = (request, response, next) => {
         next();
     }
     else{
-        var error = new Error("You are not authorized because you are NOT an Admin");
-        error.status=403;
+        var error = new Error("You are not authorized because you're not an Admin");
+        error.status = 403;
         return next(error);
     }
 }
