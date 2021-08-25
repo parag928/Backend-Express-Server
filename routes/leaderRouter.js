@@ -4,7 +4,7 @@ const cors = require('./cors');
 
 
 const leaderRouter = express.Router();
-const Leader = require('../models/leaders');
+const Leader = require('../schema/leaders');
 var authenticate = require('../authenticate');
 
 leaderRouter.use(bodyParser.json());

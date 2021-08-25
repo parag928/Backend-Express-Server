@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('./cors');
 const commRouter = express.Router();
-const Comment = require('../models/comment');
+const Comment = require('../schema/comment');
 const authenticate = require('../authenticate');
 
 commRouter.use(bodyParser.json());

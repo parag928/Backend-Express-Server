@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('./cors');
 
-const Cart = require('../models/cart');
+const Cart = require('../schema/cart');
 var authenticate = require('../authenticate');
 const cartRouter = express.Router();
 
